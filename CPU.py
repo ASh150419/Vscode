@@ -4,37 +4,53 @@ import psutil
 def _CPU_():
     summcpu = {}
     cpu_data = psutil.cpu_times()
-    summcpu.update(user_time=cpu_data.user, system_time=cpu_data.system, nice_time=cpu_data.nice, idle_time=cpu_data.idle, iowait_time=cpu_data.iowait, softirq_time=cpu_data.softirq)
+    summcpu.update(user_time=cpu_data.user, system_time=cpu_data.system, nice_time=cpu_data.nice, idle_time=cpu_data.idle)
     return summcpu
 
 
 def _Memory_():
     summmem = {}
     memory_data = psutil.virtual_memory()
-    summmem.update(total_mem=memory_data.total, available_mem=memory_data.available, percent_mem=memory_data.percent, used_mem=memory_data.used, cached_mem=memory_data.cached)
+    summmem.update(total_mem=memory_data.total // 1E+6, available_mem=memory_data.available // 1E+6,
+        used_mem=memory_data.used // 1E+6, cached_mem=memory_data.cached // 1E+6) 
     return summmem
 
 
 def _Disk_():
     summdisk = {}
     disk_data = psutil.disk_usage('/')
-    summdisk.update(total_disk=disk_data.total, used_disk=disk_data.used, free_disk=disk_data.free, percent_disk=disk_data.percent)
+    summdisk.update(total_disk=disk_data.total // 1E+6, used_disk=disk_data.used // 1E+6,
+        free_disk=disk_data.free // 1E+6, percent_disk=disk_data.percent)
     return summdisk
 
 
 def show(cpu=None, mem=None, disk=None):
-    cpu_template = "{user_time} /// {system_time} /// {nice_time} /// {idle_time} /// {iowait_time} /// {softirq_time}"
-    memory_template = "{total_mem} \\\\\\\ {available_mem} \\\\\\\ {used_mem} \\\\\\ {cached_mem}"
-    disk_template = "{total_disk} ///// {used_disk} ///// {free_disk} ///// {percent_disk}"
-    print("Время затрачиваемое обычными процессами /// Процессы в режиме ядра /// Проприетарные процессы ///"
-        "Время простоя /// Ожидание завершения ввода-вывода ///"
-            "Обслуживание програмных прерываний, (сек) :", cpu_template.format(**cpu)
+    cpu_sh = "/// {:<38} /// {:^21} /// {:^22} /// {:>13} ///"
+    cpu_template = "/// {user_time} /// {system_time} /// {nice_time} /// {idle_time} ///"
+    cpu_end = "{}"
+    mem_sh = "\\\\\\\ {:<28} \\\\\\\ {:^24} \\\\\\\ {:^24} \\\\\\\ {:>33} "
+    memory_template = "\\\\\\\ {total_mem} \\\\\\\ {available_mem} \\\\\\\ {used_mem} \\\\\\ {cached_mem} \\\\\\\ "
+    mem_end = "{}"
+    disk_template = "///// {total_disk} ///// {used_disk} ///// {free_disk} ///// {percent_disk} /////"
+    disk_sh ="///// {:>22} ///// {:^23} ///// {:^20} ///// {:<16} /////"
+    disk_end = "{}"
+    print(cpu_sh.format("Время затрачиваемое обычными процессами", "Процессы в режиме ядра", "Проприетарные процессы", "Время простоя")
     )
-    print("Общая физическая память \\\\\\\ Память под процессы \\\\\\\ " 
-            "Используемая память \\\\\\\ Неиспользуемая память вообще, (байт):", memory_template.format(**mem)
+    print(cpu_template.format(**cpu)
     )
-    print("Общий объём диска ///// Использемый объём /////"
-            "Свободный объём ///// Использование(%), (байт)", disk_template.format(**disk)
+    print(cpu_end.format("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    )
+    print(mem_sh.format("Общая физическая память (MB)", "Память под процессы (MB)" ,"Используемая память (MB)" ,"Неиспользуемая память вообще (MB)")
+    )        
+    print(memory_template.format(**mem)
+    )
+    print(mem_end.format(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    )
+    print(disk_sh.format("Общий объём диска (MB)", "Используемый объём (MB)", "Свободный объём (MB)" ,"Использование(%)")
+    )
+    print(disk_template.format(**disk)
+    )
+    print(disk_end.format("====================================================================================================================")
     )
 
 
